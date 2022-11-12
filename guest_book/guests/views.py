@@ -1,15 +1,24 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from .models import Guest
+from .forms import GuestForm
 
 def index(request):
     # Create Guest here
-    return render(request, 'guests/index.html')
+    form = GuestForm()
+    context = {'form':form}
+    return render(request, 'guests/index.html', context)
 
 def create(request):
-    guest = Guest(name="Jack", email_address="jack@gmail.com", message="OK")
-    guest.save()
-    return redirect('guest_list')
+    if request.method == 'POST':
+        form = GuestForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email_address = form.cleaned_data['email_address']
+            message = form.cleaned_data['message']
+            guest = Guest(name=name, email_address=email_address, message=message)
+            guest.save()
+    return redirect('/guests/list/')
     # Redirect to guest list
 
 def list(request):
@@ -25,5 +34,5 @@ def individual(request, id):
 def delete(request, id):
     guest = Guest.objects.get(id=id)
     guest.delete()
-    return redirect('guest_list')
+    return redirect('/guests/list/')
 
